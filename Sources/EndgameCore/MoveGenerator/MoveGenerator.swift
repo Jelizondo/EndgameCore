@@ -7,86 +7,100 @@
 
 import Foundation
 
-class MoveGenerator {
+public typealias Movement = (from: Notation, to: Notation)
+
+public class MoveGenerator {
    var asciiBoard: ASCIIBoard
    var isWhiteMove = true
    var asciiPawn: Character { isWhiteMove ? "P" : "p" }
-    
-   init(asciiBoard: ASCIIBoard) {
+       
+   public init(asciiBoard: ASCIIBoard) {
       self.asciiBoard = asciiBoard
    }
    
-   func execute(move: String) -> ASCIIBoard {
+   public func execute(move: String) -> (ASCIIBoard, Movement, Movement?) {
       
-      var movement: (piece: Character, from: Notation, to: Notation)?
+      var castleMovement: (Movement,Movement)?
+      var pieceMovement: (piece: Character, from: Notation, to: Notation)?
       switch move.first {
          case "a","b","c","d","e","f","g","h":
-            movement = PawnMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = PawnMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "N":
-            movement = KightMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = KightMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "B":
-            movement = BishopMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = BishopMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "Q":
-            movement = QueenMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = QueenMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "R":
-            movement = RookMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = RookMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "K":
-            movement = KingMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = KingMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          default:
             switch move {
                case "O-O" where isWhiteMove:
-                  shortCastleWhite()
+                  castleMovement = shortCastleWhite()
                case "O-O":
-                  shortCastleBlack()
+                  castleMovement = shortCastleBlack()
                case "O-O-O" where isWhiteMove:
-                  longCastleWhite()
+                  castleMovement = longCastleWhite()
                case "O-O-O":
-                  longCastleBlack()
+                  castleMovement = longCastleBlack()
                default:
                   fatalError("Unable to parse move -> \(move) ")
          }
       }
       
-      if let movement = movement {
+      if let movement = pieceMovement {
          self.move(piece: movement.piece, from: movement.from, to: movement.to)
+         isWhiteMove.toggle()
+         return (asciiBoard,(from: movement.from, to: movement.to), nil)
       }
-      isWhiteMove.toggle()
-      return asciiBoard
-   }
+      
+      if let movement = castleMovement {
+         isWhiteMove.toggle()
+         return (asciiBoard, movement.0,movement.1)
+      }
+      
+      fatalError("Unable to parse move")
+}
    
    func move(piece: Character, from oldPos: Notation, to newPos: Notation) {
       asciiBoard.setChar(piece, at: newPos)
       asciiBoard.setChar("1", at: oldPos)
    }
    
-   func shortCastleWhite() {
+   func shortCastleWhite() -> (Movement,Movement) {
       asciiBoard.setChar("R", at: .f1)
       asciiBoard.setChar("K", at: .g1)
       asciiBoard.setChar("1", at: .h1)
       asciiBoard.setChar("1", at: .e1)
+      return ((.h1,.f1),(.e1,.g1))
    }
    
-   func shortCastleBlack() {
+   func shortCastleBlack() -> (Movement,Movement) {
       asciiBoard.setChar("r", at: .f8)
       asciiBoard.setChar("k", at: .g8)
       asciiBoard.setChar("1", at: .h8)
       asciiBoard.setChar("1", at: .e8)
+      return ((.h8,.f8),(.e8,.g8))
    }
    
-   func longCastleWhite() {
+   func longCastleWhite() -> (Movement,Movement)  {
       asciiBoard.setChar("1", at: .e1)
       asciiBoard.setChar("R", at: .d1)
       asciiBoard.setChar("K", at: .c1)
       asciiBoard.setChar("1", at: .b1)
       asciiBoard.setChar("1", at: .a1)
+      return ((.a1,.d1),(.e1,.c1))
    }
    
-   func longCastleBlack() {
+   func longCastleBlack() -> (Movement,Movement) {
       asciiBoard.setChar("1", at: .e8)
       asciiBoard.setChar("r", at: .d8)
       asciiBoard.setChar("k", at: .c8)
       asciiBoard.setChar("1", at: .b8)
       asciiBoard.setChar("1", at: .a8)
+      return ((.a8,.d8),(.e8,.g8))
    }
    
 }

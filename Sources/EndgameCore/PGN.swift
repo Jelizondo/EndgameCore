@@ -9,15 +9,17 @@ import Foundation
 
 public struct PGN {
    
-   let event: String?
-   let site: String?
-   let date: String?
-   let round: String?
-   let whitePlayer: String?
-   let blackPlayer: String?
-   let result: String?
-   let moves: [String]
-   let rawValue: String
+   public let event: String?
+   public let site: String?
+   public let date: String?
+   public let round: String?
+   public let whitePlayer: String
+   public let blackPlayer: String
+   public let whiteElo: String?
+   public let blackElo: String?
+   public let result: String?
+   public let moves: [String]
+   public let rawValue: String
    
    public init(pgn: String) {
       var keyValuePairs = [String:String]()
@@ -46,8 +48,10 @@ public struct PGN {
       site = keyValuePairs["Site"]
       date = keyValuePairs["Date"]
       round = keyValuePairs["Round"]
-      whitePlayer = keyValuePairs["White"]
-      blackPlayer = keyValuePairs["Black"]
+      whitePlayer = keyValuePairs["White"]!
+      blackPlayer = keyValuePairs["Black"]!
+      whiteElo = keyValuePairs["WhiteElo"]
+      blackElo = keyValuePairs["BlackElo"]
       result = keyValuePairs["Result"]
    }
    
