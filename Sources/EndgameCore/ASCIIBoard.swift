@@ -47,7 +47,6 @@ public struct ASCIIBoard {
       return board
    }
    
-   
    public func getChar(at notation: Notation) -> Character {
       let components = Array(notation.rawValue)
       let col = Int(components[0].asciiValue! - 97)

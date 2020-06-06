@@ -25,8 +25,12 @@ public struct PGN {
       var keyValuePairs = [String:String]()
       
       // Parse metadata
+      let pgn = pgn.replacingOccurrences(of: "\r", with: "").replacingOccurrences(of: "\n\n", with: "\n")
+      
+      
       let components = pgn.split(separator: "\n")
-      let metadata = components.dropLast(components.count-9)
+      let metadata = components.filter { $0.contains("[") }
+      
       for data in metadata {
          let components = data.split(separator: "\"")
          let key = String(components[0].dropFirst().dropLast())
@@ -36,9 +40,13 @@ public struct PGN {
       
       // Parse moves
       var aux = [String]()
-      let moves = pgn.components(separatedBy: "\n\n").last!.replacingOccurrences(of: "\n", with: " ").split(separator: " ")
+      let moves = pgn.components(separatedBy: "\n1.").last!.replacingOccurrences(of: "\n", with: " ").split(separator: " ").dropLast()
       for move in moves {
-         aux.append(String(move.split(separator: ".").last!))
+         guard !move.contains(".") else {
+            continue
+         }
+         
+         aux.append(String(move))
       }
       
       // Initialize properties

@@ -19,7 +19,7 @@ class KingMove {
       self.asciiBoard = board
    }
    
-   func execute() -> (piece: Character, from: Notation, to: Notation) {
+   func execute() throws -> (piece: Character, from: Notation, to: Notation) {
       let move = self.move.replacingOccurrences(of: "+", with: "")
       let newPos = Notation(rawValue: String(move.suffix(2)))!
    
@@ -38,7 +38,8 @@ class KingMove {
          }
       }
       
-      fatalError("Unable to parse \(move)")
+      throw InterprterError(description: "Could not interpret king move")
+      
    }
       
 }

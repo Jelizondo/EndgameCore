@@ -20,12 +20,12 @@ class KightMove {
       self.asciiBoard = board
    }
    
-   func execute() -> (piece: Character, from: Notation, to: Notation) {
-      return knightDefault(move: move)
+   func execute() throws -> (piece: Character, from: Notation, to: Notation) {
+      return try knightDefault(move: move)
    }
-
    
-   func knightDefault(move: String) -> (Character,Notation,Notation) {
+   
+   func knightDefault(move: String) throws -> (Character,Notation,Notation) {
       let move = move.replacingOccurrences(of: "+", with: "")
       let newPos = Notation(rawValue: String(move.suffix(2)))!
       var oldPos: Notation?
@@ -49,22 +49,25 @@ class KightMove {
             } else if let pos = newPos.offset(side, a * -1), asciiBoard.getChar(at: pos) == piece {
                oldPos = newPos.offset(side, a * -1)
             }
-            
          }
          
          // Row
          if component.isNumber {
-            let left = newPos.rawValue.last!.wholeNumberValue!
-            let right = component.wholeNumberValue!
+            let right = newPos.rawValue.last!.wholeNumberValue!
+            let left = component.wholeNumberValue!
             let side = left - right
             
-            if let pos = newPos.offset(side, 2), asciiBoard.getChar(at: pos) == piece {
-               oldPos = newPos.offset(side, 2)
-            } else if let pos = newPos.offset(side, -2), asciiBoard.getChar(at: pos) == piece {
-               oldPos = newPos.offset(side, -2)
+            if let pos = newPos.offset(2,side), asciiBoard.getChar(at: pos) == piece {
+               oldPos = newPos.offset(2,side)
+            } else if let pos = newPos.offset(-2,side), asciiBoard.getChar(at: pos) == piece {
+               oldPos = newPos.offset(-2,side)
             }
          }
-          return (piece,oldPos!,newPos)
+         guard oldPos != nil else {
+            throw InterprterError(description: "Unable to parse knight move \(move)")
+         }
+         
+         return (piece,oldPos!,newPos)
       }
       
       //One possibility
@@ -85,15 +88,10 @@ class KightMove {
       }
       
       guard oldPos != nil else {
-         fatalError("Unable to parse knight move \(move)")
+         throw InterprterError(description: "Unable to parse knight move \(move)")
       }
       
       return (piece,oldPos!,newPos)
    }
    
-
-   
 }
-
-
-

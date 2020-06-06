@@ -19,12 +19,12 @@ class QueenMove {
       self.asciiBoard = board
    }
    
-   func execute() -> (piece: Character, from: Notation, to: Notation) {
-      return queenDefault(move: move)
+   func execute() throws -> (piece: Character, from: Notation, to: Notation) {
+      return try queenDefault(move: move)
    }
    
    
-   func queenDefault(move: String) -> (Character,Notation,Notation) {
+   func queenDefault(move: String) throws -> (Character,Notation,Notation) {
       let move = move.replacingOccurrences(of: "+", with: "")
       let newPos = Notation(rawValue: String(move.suffix(2)))!
       var oldPos: Notation?
@@ -57,6 +57,10 @@ class QueenMove {
                break loop
             }
          }
+      }
+      
+      guard oldPos != nil else {
+         throw InterprterError(description: "Could not interpret queen move")
       }
       
       return (piece,oldPos!,newPos)

@@ -19,17 +19,17 @@ class RookMove {
       self.asciiBoard = board
    }
    
-   func execute() -> (piece: Character, from: Notation, to: Notation) {
-      return rookDefault(move: move)
+   func execute() throws -> (piece: Character, from: Notation, to: Notation) {
+      return try rookDefault(move: move)
    }
    
    
-   func rookDefault(move: String) -> (Character,Notation,Notation) {
+   func rookDefault(move: String) throws -> (Character,Notation,Notation) {
       let move = move.replacingOccurrences(of: "+", with: "")
       let newPos = Notation(rawValue: String(move.suffix(2)))!
       var oldPos: Notation?
       
-      //Two possibilities of Queen moves
+      // Two possibilities of Rook moves
       let aux: [Character] = move.replacingOccurrences(of: "x", with: "").dropFirst().dropLast(2)
       if let component = aux.first {
          if component.isLetter {
@@ -40,19 +40,39 @@ class RookMove {
          return (piece,oldPos!,newPos)
       }
       
+      // Find rook in paths
+      var paths = ["top":newPos,
+                   "right":newPos,
+                   "bottom":newPos,
+                   "left":newPos]
       
-      loop: for i in 1...7 {
-         let squares = [newPos.offset(0, i),
-                        newPos.offset(i, 0),
-                        newPos.offset(0, i * -1),
-                        newPos.offset(i * -1, 0)]
+      loop: for _ in 1...7 {
          
-         for square in squares where square != nil {
-            if asciiBoard.getChar(at: square!) == piece {
-               oldPos = square
-               break loop
+         paths["top"] = paths["top"]?.offset(0, 1)
+         paths["right"] = paths["right"]?.offset(1, 0)
+         paths["bottom"] = paths["bottom"]?.offset(0, -1)
+         paths["left"] = paths["left"]?.offset(-1, 0)
+
+         for path in paths {
+            switch asciiBoard.getChar(at: path.value) {
+               case self.piece: // Rook found
+                  oldPos = path.value
+                  break loop
+               case "1": // Empty
+                  break
+               default: // Other piece found
+                  paths.removeValue(forKey: path.key)
             }
          }
+      }
+      
+      
+      guard oldPos != nil else {
+         throw InterprterError(description: "Could not interpret rook move")
+      }
+      
+      if oldPos! == newPos {
+         throw InterprterError(description: "------")
       }
       
       return (piece,oldPos!,newPos)

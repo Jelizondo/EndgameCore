@@ -7,6 +7,10 @@
 
 import Foundation
 
+public struct InterprterError: Error {
+   let description: String
+}
+
 public typealias Movement = (from: Notation, to: Notation)
 
 public class MoveGenerator {
@@ -18,23 +22,23 @@ public class MoveGenerator {
       self.asciiBoard = asciiBoard
    }
    
-   public func execute(move: String) -> (ASCIIBoard, Movement, Movement?) {
+   public func execute(move: String) throws -> (ASCIIBoard, Movement, Movement?) {
       
       var castleMovement: (Movement,Movement)?
       var pieceMovement: (piece: Character, from: Notation, to: Notation)?
       switch move.first {
          case "a","b","c","d","e","f","g","h":
-            pieceMovement = PawnMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = try PawnMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "N":
-            pieceMovement = KightMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = try KightMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "B":
-            pieceMovement = BishopMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = try BishopMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "Q":
-            pieceMovement = QueenMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = try QueenMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "R":
-            pieceMovement = RookMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = try RookMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          case "K":
-            pieceMovement = KingMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
+            pieceMovement = try KingMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          default:
             switch move {
                case "O-O" where isWhiteMove:
@@ -46,7 +50,7 @@ public class MoveGenerator {
                case "O-O-O":
                   castleMovement = longCastleBlack()
                default:
-                  fatalError("Unable to parse move -> \(move) ")
+                  throw InterprterError(description: "Unable to parse move -> \(move)")
          }
       }
       

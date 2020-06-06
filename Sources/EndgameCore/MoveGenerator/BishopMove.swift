@@ -19,12 +19,12 @@ class BishopMove {
       self.asciiBoard = board
    }
    
-   func execute() -> (piece: Character, from: Notation, to: Notation) {
-      return bishopDefault(move: move)
+   func execute() throws -> (piece: Character, from: Notation, to: Notation) {
+      return try bishopDefault(move: move)
    }
    
    
-   func bishopDefault(move: String) -> (Character,Notation,Notation) {
+   func bishopDefault(move: String) throws -> (Character,Notation,Notation) {
       let move = move.replacingOccurrences(of: "+", with: "")
       let newPos = Notation(rawValue: String(move.suffix(2)))!
       var oldPos: Notation?
@@ -42,6 +42,10 @@ class BishopMove {
                break loop
             }
          }
+      }
+      
+      guard oldPos != nil else {
+         throw InterprterError(description: "Could not interpret bishop move")
       }
       
       return (piece,oldPos!,newPos)
