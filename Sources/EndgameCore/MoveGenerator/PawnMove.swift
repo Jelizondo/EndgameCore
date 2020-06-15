@@ -20,28 +20,34 @@ class PawnMove {
       self.asciiBoard = board
    }
    
-   func execute() throws -> (piece: Character, from: Notation, to: Notation) {
+   func execute() throws -> ASCIIBoard {
       let move = self.move.replacingOccurrences(of: "+", with: "")
       let isCapture = move.contains("x")
       let isPromotion = move.contains("=")
-
+      
+      
+      var movement: Movement?
       switch move {
          case _ where isPromotion:
-            return try pawnPromotion(move: move)
+            try pawnPromotion(move: move)
          case _ where isCapture:
-            return try pawnCapture(move: move)
+            movement = try pawnCapture(move: move)
          default:
-            return try pawnDefault(move: move)
-            
+            movement = try pawnDefault(move: move)
       }
       
+      if let movement = movement {
+         self.move(from: movement.from, to: movement.to)
+      }
+      
+      return asciiBoard
    }
    
-   func pawnPromotion(move: String) throws -> (Character ,Notation, Notation) {
+   func pawnPromotion(move: String) throws {
       let components = move.split(separator: "=")
       let move = String(components.first!)
       let promotedPiece = isWhiteMove ? Character(String(components.last!)) : Character(String(components.last!).capitalized)
-      let pieceMovement: (Character,Notation,Notation)
+      let pieceMovement: Movement
       
       if self.move.contains("x") {
          pieceMovement = try pawnCapture(move: move)
@@ -49,23 +55,32 @@ class PawnMove {
          pieceMovement = try pawnDefault(move: move)
       }
       
-      return (promotedPiece,pieceMovement.1,pieceMovement.2)
-      
+      asciiBoard.setChar(promotedPiece, at: pieceMovement.to)
+      asciiBoard.setChar("1", at: pieceMovement.from)
+            
    }
    
-   func pawnCapture(move: String) throws -> (Character,Notation,Notation) {
+   func pawnCapture(move: String) throws -> (Notation,Notation) {
       let components = move.split(separator: "x")
-      let newPos = String(components[1])
-      let oldPos = String(components[0]) + String(newPos.last!.wholeNumberValue!+directiton)
+      let newPos = Notation(rawValue: String(components[1]) )
+      let oldPos = Notation(rawValue: String(components[0]) + String(String(components[1]).last!.wholeNumberValue!+directiton) )
       
-      guard Notation(rawValue: oldPos) != nil else {
+      guard oldPos != nil else {
          throw InterprterError(description: "Could not interpret rook move")
       }
+     
+      if asciiBoard.getChar(at: newPos!) == "1" {
+         if isWhiteMove {
+            asciiBoard.setChar("1", at: newPos!.offset(0,-1)!)
+         } else {
+            asciiBoard.setChar("1", at: newPos!.offset(0,1)!)
+         }
+      }
       
-      return (piece,Notation(rawValue: oldPos)!,Notation(rawValue: newPos)!)
+      return (oldPos!,newPos!)
    }
    
-   func pawnDefault(move: String) throws -> (Character,Notation,Notation) {
+   func pawnDefault(move: String) throws -> (Notation,Notation) {
       let move = move.replacingOccurrences(of: "+", with: "")
       let oldPos: Notation
 
@@ -83,7 +98,12 @@ class PawnMove {
          oldPos = behindPawn
       }
       
-      return (piece,oldPos,newPos)
+      return (oldPos,newPos)
+   }
+   
+   func move(from oldPos: Notation, to newPos: Notation) {
+      asciiBoard.setChar(piece, at: newPos)
+      asciiBoard.setChar("1", at: oldPos)
    }
    
 }
