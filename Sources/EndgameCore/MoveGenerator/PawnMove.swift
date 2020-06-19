@@ -66,7 +66,7 @@ class PawnMove {
       let oldPos = Notation(rawValue: String(components[0]) + String(String(components[1]).last!.wholeNumberValue!+directiton) )
       
       guard oldPos != nil else {
-         throw InterprterError(description: "Could not interpret rook move")
+         throw InterprterError(move: move)
       }
      
       if asciiBoard.getChar(at: newPos!) == "1" {
@@ -85,11 +85,11 @@ class PawnMove {
       let oldPos: Notation
 
       guard let newPos = Notation(rawValue: move) else {
-         throw InterprterError(description: "Could not interpret pawn move")
+         throw InterprterError(move: move)
       }
       
       guard let behindPawn = newPos.offset(0,directiton) else {
-         throw InterprterError(description: "Could not interpret pawn move")
+         throw InterprterError(move: move)
       }
       
       if asciiBoard.getChar(at: behindPawn ) == "1" {

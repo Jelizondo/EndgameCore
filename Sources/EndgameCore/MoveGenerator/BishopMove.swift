@@ -45,7 +45,7 @@ class BishopMove {
       }
       
       guard oldPos != nil else {
-         throw InterprterError(description: "Could not interpret bishop move")
+         throw InterprterError(move: move)
       }
       
       return (piece,oldPos!,newPos)

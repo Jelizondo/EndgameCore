@@ -26,51 +26,22 @@ class KightMove {
    
    
    func knightDefault(move: String) throws -> (Character,Notation,Notation) {
-      let move = move.replacingOccurrences(of: "+", with: "")
+      let move = move.replacingOccurrences(of: "x", with: "")
+                     .replacingOccurrences(of: "+", with: "")
+
       let newPos = Notation(rawValue: String(move.suffix(2)))!
-      var oldPos: Notation?
+      var oldPos: Notation
       
-      
-      //Two possibilities of kight moves, if this is empty then there is only one possibility
-      let aux: [Character] = move.replacingOccurrences(of: "x", with: "").dropFirst().dropLast(2)
-      
-      // Column or Row where the piece is located
-      if let component = aux.first {
-         // Column
-         if component.isLetter {
-            let left = Int(newPos.rawValue.first!.asciiValue!)
-            let right = Int(component.asciiValue!)
-            
-            let side = right - left
-            let a = abs(side) == 1 ? 2 : 1
-            
-            if let pos = newPos.offset(side, a), asciiBoard.getChar(at: pos) == piece {
-               oldPos = newPos.offset(side, a)
-            } else if let pos = newPos.offset(side, a * -1), asciiBoard.getChar(at: pos) == piece {
-               oldPos = newPos.offset(side, a * -1)
-            }
-         }
-         
-         // Row
-         if component.isNumber {
-            let right = newPos.rawValue.last!.wholeNumberValue!
-            let left = component.wholeNumberValue!
-            let side = left - right
-            
-            if let pos = newPos.offset(2,side), asciiBoard.getChar(at: pos) == piece {
-               oldPos = newPos.offset(2,side)
-            } else if let pos = newPos.offset(-2,side), asciiBoard.getChar(at: pos) == piece {
-               oldPos = newPos.offset(-2,side)
-            }
-         }
-         guard oldPos != nil else {
-            throw InterprterError(description: "Unable to parse knight move \(move)")
-         }
-         
-         return (piece,oldPos!,newPos)
+      if move.count > 3 {
+         oldPos = try searchForKnightInColOrRow(newPos: newPos)
+      } else {
+         oldPos = try searchForKnight(newPos: newPos)
       }
       
-      //One possibility
+      return (piece,oldPos,newPos)
+   }
+   
+   func searchForKnight(newPos: Notation) throws -> Notation {
       let squares = [newPos.offset(1,2),
                      newPos.offset(1,-2),
                      newPos.offset(-1,-2),
@@ -82,16 +53,62 @@ class KightMove {
       
       for square in squares where square != nil {
          if asciiBoard.getChar(at: square!) == piece {
-            oldPos = square
-            break
+            return square!
          }
       }
       
-      guard oldPos != nil else {
-         throw InterprterError(description: "Unable to parse knight move \(move)")
+      throw InterprterError(move: self.move)
+   }
+   
+   func searchForKnightInColOrRow(newPos: Notation) throws -> Notation {
+      let aux: [Character] = move.replacingOccurrences(of: "x", with: "")
+                                 .replacingOccurrences(of: "+", with: "")
+                                 .dropFirst()
+                                 .dropLast(2)
+      
+      // Column
+      if aux[0].isLetter {
+         return try searchKnightInCol(from: newPos, aux: aux)
       }
       
-      return (piece,oldPos!,newPos)
+      // Row
+      if aux[0].isNumber {
+         return try searchKnightInRow(from: newPos, aux: aux)
+      }
+      
+      throw InterprterError(move: move)
+   }
+   
+   func searchKnightInCol(from notation: Notation, aux: [Character]) throws -> Notation {
+      let left = Int(notation.rawValue.first!.asciiValue!)
+      let right = Int(aux[0].asciiValue!)
+      
+      let side = right - left
+      let a = abs(side) == 1 ? 2 : 1
+      
+      if let pos = notation.offset(side, a), asciiBoard.getChar(at: pos) == piece {
+         return pos
+      } else if let pos = notation.offset(side, a * -1), asciiBoard.getChar(at: pos) == piece {
+         return pos
+      }
+      
+      throw InterprterError(move: self.move)
+   }
+   
+   func searchKnightInRow(from notation: Notation, aux: [Character]) throws -> Notation {
+      let right = notation.rawValue.last!.wholeNumberValue!
+      let left = aux[0].wholeNumberValue!
+      
+      let y = left - right
+      let x = abs(y) == 1 ? 2 : 1
+
+      if let pos = notation.offset(x,y), asciiBoard.getChar(at: pos) == piece {
+         return pos
+      } else if let pos = notation.offset(x * -1,y), asciiBoard.getChar(at: pos) == piece {
+         return pos
+      }
+      
+      throw InterprterError(move: self.move)
    }
    
 }

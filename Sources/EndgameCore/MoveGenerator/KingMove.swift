@@ -38,8 +38,8 @@ class KingMove {
          }
       }
       
-      throw InterprterError(description: "Could not interpret king move")
-      
+      throw InterprterError(move: move)
+
    }
       
 }

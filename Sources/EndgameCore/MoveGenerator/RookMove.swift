@@ -24,47 +24,61 @@ class RookMove {
       return try rookDefault(move: move)
    }
    
-   
    func rookDefault(move: String) throws -> (Character,Notation,Notation) {
       let move = move.replacingOccurrences(of: "+", with: "").replacingOccurrences(of: "x", with: "")
       let newPos = Notation(rawValue: String(move.suffix(2)))!
-      var oldPos: Notation?
+      let isRookColOrRowKnown = move.count > 3
+      var oldPos: Notation
       
-      // Two possibilities of Rook moves
-      if move.count > 3 {
-         
-         let aux: [Character] = Array(move.dropFirst())
-         
-         guard let component = aux.first else {
-            throw InterprterError(description: errorMessage)
-         }
-         
-         let searchInCol = aux[1] == component
-         let searchInRow = aux[2] == component
-         
-         if searchInCol {
-            oldPos = try self.searchInCol(newPos: newPos)
-         } else if component.isLetter {
-            oldPos = Notation(rawValue: "\(component)\(move.last!)")
-         } else if searchInRow {
-            oldPos = try self.searchInRow(newPos: newPos)
-         } else if component.isLetter {
-            oldPos = Notation(rawValue: "\(Array(move)[move.count-2])\(component)")
-         }
-         
-         if let oldPos = oldPos {
-            return (piece,oldPos,newPos)
-         }
+      if isRookColOrRowKnown {
+         oldPos = try searchInColOrRow(newPos: newPos)
+         return (piece,oldPos,newPos)
+      } else {
+         oldPos = try searchInColAndRow(newPos: newPos)
+         return (piece,oldPos,newPos)
       }
       
-      // Find rook in paths
+     
+   }
+   
+   // MARK: - Cases
+   
+   func searchInColOrRow(newPos: Notation) throws -> Notation {
+      let move = self.move.replacingOccurrences(of: "+", with: "")
+                          .replacingOccurrences(of: "x", with: "")
+                          .dropFirst()
+      
+      let aux: [Character] = Array(move)
+      var foundAt: Notation?
+      
+      let searchInCol = aux[0] == aux[1]
+      let searchInRow = aux[0] == aux[2]
+      
+      if searchInCol {
+         foundAt = try self.searchInCol(newPos: newPos)
+      } else if aux[0].isLetter {
+         foundAt = Notation(rawValue: "\(aux[0])\(aux[2])")
+      } else if searchInRow {
+         foundAt = try self.searchInRow(newPos: newPos)
+      } else if aux[0].isNumber {
+         foundAt = Notation(rawValue: "\(aux[1])\(aux[0])")
+      }
+      
+      guard let found = foundAt else {
+         throw InterprterError(move: self.move)
+      }
+      
+      return found
+      
+   }
+   
+   func searchInColAndRow(newPos: Notation) throws -> Notation {
       var paths = ["top":newPos,
                    "right":newPos,
                    "bottom":newPos,
                    "left":newPos]
       
       loop: for _ in 1...7 {
-         
          paths["top"] = paths["top"]?.offset(0, 1)
          paths["right"] = paths["right"]?.offset(1, 0)
          paths["bottom"] = paths["bottom"]?.offset(0, -1)
@@ -73,8 +87,7 @@ class RookMove {
          for path in paths {
             switch asciiBoard.getChar(at: path.value) {
                case self.piece: // Rook found
-                  oldPos = path.value
-                  break loop
+                  return  path.value
                case "1": // Empty
                   break
                default: // Other piece found
@@ -83,12 +96,10 @@ class RookMove {
          }
       }
       
-      guard oldPos != nil else {
-         throw InterprterError(description: "Could not interpret rook move")
-      }
-            
-      return (piece,oldPos!,newPos)
+      throw InterprterError(move: move)
    }
+   
+   // MARK: - Helper functions
    
    func searchInRow(newPos: Notation) throws -> Notation {
       var paths = ["bottom":newPos,
@@ -111,7 +122,7 @@ class RookMove {
          }
       }
       
-      throw InterprterError(description: "Could not interpret rook move")
+      throw InterprterError(move: move)
    }
    
    func searchInCol(newPos: Notation) throws -> Notation {
@@ -135,7 +146,7 @@ class RookMove {
          }
       }
       
-      throw InterprterError(description: "Could not interpret rook move")
+      throw InterprterError(move: move)
    }
    
 }

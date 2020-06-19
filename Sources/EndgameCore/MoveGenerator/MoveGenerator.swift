@@ -9,6 +9,14 @@ import Foundation
 
 public struct InterprterError: Error {
    let description: String
+   
+   init(move: String) {
+      description = "Unable to interpret move -> \(move)"
+   }
+   
+   init() {
+      description = "Unable to interpret move"
+   }
 }
 
 public typealias Movement = (from: Notation, to: Notation)
@@ -39,16 +47,16 @@ public class MoveGenerator {
             pieceMovement = try KingMove(move: move, isWhiteMove: isWhiteMove, board: asciiBoard).execute()
          default:
             switch move {
-               case "O-O" where isWhiteMove:
+               case "O-O" where isWhiteMove,"O-O+" where isWhiteMove:
                   shortCastleWhite()
-               case "O-O":
+               case "O-O","O-O+":
                   shortCastleBlack()
-               case "O-O-O" where isWhiteMove:
+               case "O-O-O" where isWhiteMove,"O-O-O+" where isWhiteMove:
                   longCastleWhite()
-               case "O-O-O":
+               case "O-O-O","O-O-O+":
                   longCastleBlack()
                default:
-                  throw InterprterError(description: "Unable to parse move -> \(move)")
+                  throw InterprterError(move: move)
          }
       }
       

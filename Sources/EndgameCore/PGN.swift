@@ -39,12 +39,20 @@ public struct PGN {
       }
       
       // Parse moves
+      
       var aux = [String]()
-      let moves = pgn.components(separatedBy: "\n1.").last!.replacingOccurrences(of: "\n", with: " ").split(separator: " ").dropLast()
+      let moves = pgn.components(separatedBy: "\n1.")
+                     .last!
+                     .replacingOccurrences(of: "\n", with: " ")
+                     .split(separator: " ")
+                     .dropLast()
+      
       for move in moves {
-         guard !move.contains(".") else {
-            continue
-         }
+         let move = move.replacingOccurrences(of: "[0-9]*[.]",
+                                              with: "",
+                                              options: .regularExpression)
+         
+         guard !move.isEmpty else { continue }
          
          aux.append(String(move))
       }

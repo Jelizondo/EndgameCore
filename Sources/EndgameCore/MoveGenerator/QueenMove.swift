@@ -26,44 +26,76 @@ class QueenMove {
    
    func queenDefault(move: String) throws -> (Character,Notation,Notation) {
       let move = move.replacingOccurrences(of: "+", with: "")
+                     .replacingOccurrences(of: "x", with: "")
+      
+      let isQueenColOrRowKnown = move.count > 3
       let newPos = Notation(rawValue: String(move.suffix(2)))!
-      var oldPos: Notation?
+      var oldPos: Notation
       
-      //Two possibilities of Queen moves
-      let aux: [Character] = move.replacingOccurrences(of: "x", with: "").dropFirst().dropLast(2)
-      if let component = aux.first {
-         if component.isLetter {
-            oldPos = Notation(rawValue: "\(component)\(move.last!)")
-         } else {
-            oldPos = Notation(rawValue: "\(Array(move)[move.count-2])\(component)")
-         }
-         return (piece,oldPos!,newPos)
+      if isQueenColOrRowKnown {
+         oldPos = try searchForQueenInColOrRow()
+      } else {
+         oldPos = try searchForQueen(newPos: newPos)
       }
+  
+      return (piece,oldPos,newPos)
+   }
+   
+   func searchForQueen(newPos: Notation) throws -> Notation {
+      var paths = ["top":newPos,
+                   "right":newPos,
+                   "bottom":newPos,
+                   "left":newPos,
+                   "topRight":newPos,
+                   "bottomRight":newPos,
+                   "bottomLeft":newPos,
+                   "topLeft":newPos]
       
-      
-      loop: for i in 1...7 {
-         let squares = [newPos.offset(i, i),
-                        newPos.offset(i, i * -1),
-                        newPos.offset(i * -1, i),
-                        newPos.offset(i * -1, i * -1),
-                        newPos.offset(0, i),
-                        newPos.offset(i, 0),
-                        newPos.offset(0, i * -1),
-                        newPos.offset(i * -1, 0)]
+      loop: for _ in 1...7 {
+         paths["top"] = paths["top"]?.offset(0, 1)
+         paths["right"] = paths["right"]?.offset(1, 0)
+         paths["bottom"] = paths["bottom"]?.offset(0, -1)
+         paths["left"] = paths["left"]?.offset(-1, 0)
+         paths["topRight"] = paths["topRight"]?.offset(1, 1)
+         paths["bottomRight"] = paths["bottomRight"]?.offset(1, -1)
+         paths["bottomLeft"] = paths["bottomLeft"]?.offset(-1, -1)
+         paths["topLeft"] = paths["topLeft"]?.offset(-1, 1)
          
-         for square in squares where square != nil {
-            if asciiBoard.getChar(at: square!) == piece {
-               oldPos = square
-               break loop
+         for path in paths {
+            switch asciiBoard.getChar(at: path.value) {
+               case self.piece: // Queen found
+                  return path.value
+               case "1": // Empty
+                  break
+               default: // Other piece found
+                  paths.removeValue(forKey: path.key)
             }
          }
       }
       
-      guard oldPos != nil else {
-         throw InterprterError(description: "Could not interpret queen move")
+      throw InterprterError(move: self.move)
+   }
+   
+   func searchForQueenInColOrRow() throws -> Notation {
+      let move = self.move.replacingOccurrences(of: "+", with: "")
+                          .replacingOccurrences(of: "x", with: "")
+                          .dropFirst()
+      
+      let aux: [Character] = Array(move)
+      var oldPos: Notation?
+      
+      if aux[0].isLetter {
+         oldPos = Notation(rawValue: "\(aux[0])\([aux[2]])")
+      } else if aux[0].isNumber {
+         oldPos = Notation(rawValue: "\(aux[1])\(aux[0])")
       }
       
-      return (piece,oldPos!,newPos)
+      guard oldPos != nil else {
+         throw InterprterError(move: self.move)
+      }
+      
+      return oldPos!
+      
    }
    
 }
