@@ -32,9 +32,9 @@ public struct PGN {
       let metadata = components.filter { $0.contains("[") }
       
       for data in metadata {
-         let components = data.split(separator: "\"")
-         let key = String(components[0].dropFirst().dropLast())
-         let value = String(components[1])
+         let components = data.components(separatedBy: " \"")
+         let key = String(components[0].dropFirst())
+         let value = String(components[1].dropLast(2))
          keyValuePairs[key] = value
       }
       
@@ -66,9 +66,28 @@ public struct PGN {
       round = keyValuePairs["Round"]
       whitePlayer = keyValuePairs["White"]!
       blackPlayer = keyValuePairs["Black"]!
-      whiteElo = keyValuePairs["WhiteElo"]
-      blackElo = keyValuePairs["BlackElo"]
       result = keyValuePairs["Result"]
+      
+      if let elo = keyValuePairs["WhiteElo"] {
+         if elo.isEmpty {
+            whiteElo = nil
+         } else {
+            whiteElo = elo
+         }
+      } else {
+         whiteElo = nil
+      }
+      
+      if let elo = keyValuePairs["WhiteElo"] {
+         if elo.isEmpty {
+            blackElo = nil
+         } else {
+            blackElo = elo
+         }
+      } else {
+         blackElo = nil
+      }
+      
    }
    
 }
