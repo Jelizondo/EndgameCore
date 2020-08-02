@@ -78,7 +78,7 @@ public struct PGN {
          whiteElo = nil
       }
       
-      if let elo = keyValuePairs["WhiteElo"] {
+      if let elo = keyValuePairs["BlackElo"] {
          if elo.isEmpty {
             blackElo = nil
          } else {
