@@ -7,17 +7,16 @@
 
 import Foundation
 
-public struct ECO: Identifiable, Decodable {
-   
+public struct Opening: Identifiable, Decodable {
    public let id = UUID()
-   public let key: String
-   public let openingName: String
+   public let eco: String
+   public let name: String
    public let variation: String?
    public let moves: [String]
   
    enum CodingKeys: String, CodingKey {
-      case key = "eco"
-      case openingName = "name"
+      case eco
+      case name
       case variation
       case moves
    }
