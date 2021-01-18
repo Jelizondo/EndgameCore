@@ -19,6 +19,7 @@ public struct Game: Identifiable {
    public let blackElo: String?
    public let result: String?
    public let moves: [String]
+   public let eco: String?
    public let pgn: String
    public var asciiPositions: [ASCIIBoard] = [ASCIIBoard()]
    
@@ -33,6 +34,7 @@ public struct Game: Identifiable {
       blackElo = pgn.blackElo
       result = pgn.result
       moves = pgn.moves
+      eco = pgn.eco
       self.pgn = pgn.rawValue
       
       let moveGen = MoveGenerator(asciiBoard: ASCIIBoard())

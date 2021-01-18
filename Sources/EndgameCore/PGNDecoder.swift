@@ -79,6 +79,7 @@ public struct PGNDecoder {
                     whiteElo: keyValuePairs["WhiteElo"] == "" ? nil : keyValuePairs["WhiteElo"],
                     blackElo: keyValuePairs["BlackElo"] == "" ? nil : keyValuePairs["BlackElo"],
                     result: keyValuePairs["Result"],
+                    eco: keyValuePairs["ECO"],
                     moves: aux,
                     rawValue: rawPGN)
       

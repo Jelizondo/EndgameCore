@@ -17,6 +17,7 @@ public struct PGN {
    public let whiteElo: String?
    public let blackElo: String?
    public let result: String?
+   public let eco: String?
    public let moves: [String]
    public let rawValue: String
    
