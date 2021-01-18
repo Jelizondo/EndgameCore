@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ASCIIBoard {
+public struct ASCIIBoard: Equatable {
    
    public private(set) var rawValue: [[Character]] = Array(repeating: Array(repeating: Character(" "), count: 8), count: 8)
    
